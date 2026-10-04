@@ -56,7 +56,7 @@ and visit <http://localhost:4173>.
 ## Publish it with GitHub Pages
 
 It is a static site, so GitHub Pages can host it as is: in the repository go
-to **Settings → Pages**, choose **Deploy from a branch**, pick `main` and
+to **Settings → Pages**, choose **Deploy from a branch**, pick `master` and
 `/ (root)`, and save. The game appears at
 `https://<your-username>.github.io/toadstool-chess/`.
 
