@@ -1,0 +1,156 @@
+/* /yc-chess only: the edition tabs and the fine print. Everything else
+   comes from ../css, shared with the woodland board. */
+
+.yc-tabs {
+  position: absolute;
+  z-index: 3;
+  left: calc(var(--square) * .3);
+  top: calc(var(--square) * .15);
+  display: flex;
+  gap: 4px;
+  font-size: calc(var(--square) * .26);
+}
+.yc-tabs a {
+  padding: 2px 12px 4px;
+  color: var(--ink);
+  text-decoration: none;
+  background: #fdfaf1;
+  border: 1.6px solid var(--line);
+  border-bottom-width: 0;
+  border-radius: 10px 12px 0 0 / 12px 10px 0 0;
+  opacity: .7;
+  transition: opacity .15s, transform .15s;
+}
+.yc-tabs a:hover { opacity: 1; transform: translateY(-2px); }
+.yc-tabs a[aria-current="page"] { color: #c4612b; opacity: 1; border-color: #c4612b; }
+
+.yc-fine {
+  position: absolute;
+  z-index: 3;
+  right: calc(var(--square) * .3);
+  bottom: calc(var(--square) * .1);
+  margin: 0;
+  font-size: calc(var(--square) * .2);
+  color: var(--ink);
+  opacity: .55;
+}
+
+
+/* ---- the name tag shown on hover, or pinned with a double-click ---- */
+.name-tag {
+  position: absolute;
+  z-index: 8;
+  pointer-events: none;
+  padding: .25em .8em .35em;
+  max-width: calc(var(--square) * 4);
+  background: #fdfaf1;
+  border: 1.6px solid var(--line);
+  border-radius: 12px 10px 12px 10px / 10px 12px 10px 12px;
+  box-shadow: 1px 2px 0 rgba(80, 60, 40, .18);
+  font-size: max(13px, calc(var(--square) * .27));
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -100%) scale(.9);
+  transform-origin: 50% 100%;
+  transition: opacity .14s ease, transform .14s ease;
+}
+.name-tag.on { opacity: 1; transform: translate(-50%, calc(-100% - 6px)) scale(1); }
+.name-tag b { display: block; font-weight: 400; font-size: 1.1em; color: var(--team, var(--red)); }
+.name-tag span { font-size: .82em; opacity: .75; }
+.name-tag.pinned { border-color: var(--team, var(--red)); border-width: 2px; }
+/* the little point under the tag */
+.name-tag::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 11px;
+  height: 11px;
+  background: #fdfaf1;
+  border-right: 1.6px solid var(--line);
+  border-bottom: 1.6px solid var(--line);
+  transform: translateX(-50%) rotate(45deg);
+}
+.name-tag.pinned::after { border-color: var(--team, var(--red)); }
+
+/* ---------------- the YC sheet's doodles ---------------- */
+.yc-text {
+  position: absolute;
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+  color: #c4501a;
+  line-height: 1;
+}
+.yc-tiny { font-size: calc(var(--square) * .2); color: var(--ink); opacity: .75; }
+
+/* the motto ribbon waves a little */
+.yc-motto { animation: ribbon 5s ease-in-out infinite; transform-origin: 50% 50%; }
+@keyframes ribbon { 0%, 100% { transform: skewY(0) rotate(0); } 50% { transform: skewY(-.8deg) rotate(.6deg); } }
+.yc-motto-text { left: 11%; right: 11%; top: 6%; font-size: calc(var(--square) * .36); }
+
+/* fog rolling past the bridge, a boat bobbing under it */
+.yc-fog { animation: fog 16s ease-in-out infinite; }
+@keyframes fog { 0%, 100% { transform: translateX(0); opacity: .95; } 50% { transform: translateX(120%); opacity: .8; } }
+.yc-boat { animation: bob 3.2s ease-in-out infinite; }
+
+/* the rocket hovers on a flickering flame and puffs smoke */
+.yc-lift { animation: lift 3s ease-in-out infinite; }
+@keyframes lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5%); } }
+.yc-flame { transform-origin: 50% 0; animation: flame .18s steps(2) infinite alternate; }
+@keyframes flame { from { transform: scaleY(1); } to { transform: scaleY(.82) scaleX(1.08); } }
+.yc-smoke { opacity: 0; animation: rocket-smoke 1.5s ease-out infinite; }
+@keyframes rocket-smoke {
+  0% { transform: translateY(0) scale(.4); opacity: 0; }
+  20% { opacity: .9; }
+  100% { transform: translateY(70%) scale(1.5); opacity: 0; }
+}
+
+/* steam off the ramen and the coffee */
+.yc-steam { transform-origin: 50% 100%; animation: steam 2.6s ease-in-out infinite; }
+@keyframes steam {
+  0% { transform: translateY(10%) scaleY(.7); opacity: 0; }
+  30% { opacity: .9; }
+  100% { transform: translateY(-30%) scaleY(1.1); opacity: 0; }
+}
+
+/* Demo Day: a sweeping spotlight and bursts of applause */
+.yc-spot { transform-origin: 50% 0; animation: spot 6s ease-in-out infinite; }
+@keyframes spot { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }
+.yc-clap { opacity: 0; animation: clap 1.8s ease-out infinite; }
+@keyframes clap { 0%, 100% { opacity: 0; transform: scale(.6); } 30% { opacity: 1; transform: scale(1.1); } 60% { opacity: 0; } }
+.yc-stage-text { left: 20%; right: 20%; top: 9.5%; font-size: calc(var(--square) * .34); color: #fdf3e6; }
+
+/* the cable car climbs the hill and rolls back down */
+.yc-cablecar { animation: cable 9s ease-in-out infinite; }
+@keyframes cable { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(250%, -64%); } }
+
+/* the runway: a windsock, and a plane that taxis with the game, then flies */
+.yc-sock { transform-origin: 0 50%; animation: reed 2.4s ease-in-out infinite; }
+.yc-plane { left: 2%; transition: left 1.4s ease-in-out, transform 1.4s ease-in-out; }
+.yc-plane.airborne { transform: translate(40%, -120%) rotate(-14deg); }
+
+/* ---- the boil, from sprite sheets (see pencil-sprite.js) ----
+   Three frames side by side; stepping background-position shows them in
+   the order 0-1-2-1, eight a second, each piece on its own beat. */
+.sprite {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+  animation: sprite-boil .5s steps(1, end) infinite;
+  animation-delay: var(--phase, 0s);
+}
+.ddp > .sprite { animation-duration: .7s; }
+.sprite.still, .art.still .sprite { animation: none; }
+@keyframes sprite-boil {
+  0% { background-position: 0 0; }
+  25% { background-position: 50% 0; }
+  50% { background-position: 100% 0; }
+  75%, 100% { background-position: 50% 0; }
+}
