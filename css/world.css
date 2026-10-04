@@ -1,0 +1,283 @@
+/* The sheet of paper the game is drawn on, and the doodles in its margins.
+
+   The whole sheet always fits the window, like a drawing on a page, never a
+   page to scroll. In a landscape window every doodle is pinned round the
+   board in "square" units from the middle of the sheet; in a portrait or
+   squarish one the margins fold into rows above and below the board. The
+   square size is whatever lets the chosen arrangement fit both ways. */
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.sheet {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: calc(var(--square) * .25) 0 calc(var(--square) * .5);
+  /* a couple of faint folds, as if the sheet had been in a pocket */
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(140, 120, 90, .07) 50%, transparent calc(50% + 1px)),
+    linear-gradient(180deg, transparent 33%, rgba(140, 120, 90, .06) 33.2%, transparent 33.6%);
+}
+
+.stage {
+  position: relative;
+  z-index: 1;
+  width: max-content;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sky {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(var(--square) * .35);
+  height: calc(var(--square) * 1.6);
+}
+
+/* ---------------- every doodle ---------------- */
+.dd { position: absolute; pointer-events: none; }
+.sky .dd { position: relative; }
+.ddp { position: absolute; }
+.ddp > img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; user-select: none; -webkit-user-drag: none;
+}
+.ddface { position: absolute; width: 100%; height: 100%; overflow: visible; }
+
+/* doodles boil a little slower than the pieces: calmer at the edges */
+.ddp > .boil { animation: .7s steps(1, end) infinite; animation-delay: var(--phase, 0s); }
+.ddp > .b0 { animation-name: boil0; }
+.ddp > .b1 { animation-name: boil1; }
+.ddp > .b2 { animation-name: boil2; }
+
+.blinker { transform-box: fill-box; transform-origin: center; transition: transform .08s; }
+.blinker.shut { transform: scaleY(.12); }
+
+/* ---------------- the sky ---------------- */
+.dd-sun { width: calc(var(--square) * 1.55); height: calc(var(--square) * 1.55); margin-top: calc(var(--square) * -.1); }
+.dd-sun .spin { animation: spin 40s linear infinite; }
+.dd-sun .mood-laugh, .dd-sun .mood-oops { display: none; }
+.dd-sun.laugh .mood-calm, .dd-sun.oops .mood-calm { display: none; }
+.dd-sun.laugh .mood-laugh, .dd-sun.oops .mood-oops { display: inline; }
+.dd-sun.laugh { animation: giggle-sun .5s ease-in-out 3; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes giggle-sun { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-6deg); } 70% { transform: rotate(6deg); } }
+
+.dd-bunting { width: calc(var(--square) * 6.4); height: calc(var(--square) * 6.4 * 60 / 540); margin-top: calc(var(--square) * .05); }
+.hanging { transform-origin: 50% 0; animation: swing 2.6s ease-in-out infinite alternate; }
+@keyframes swing { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+
+.dd-moon { width: calc(var(--square) * 1.5); height: calc(var(--square) * 1.5); margin-top: calc(var(--square) * -.15); }
+.snore { position: absolute; left: 70%; top: -12%; width: 40%; height: 40%; }
+.snore svg, .dd-zzz svg { width: 100%; height: 100%; overflow: visible; }
+.snore path, .dd-zzz path { opacity: 0; animation: zzz 3s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.snore .z2, .dd-zzz .z2 { animation-delay: .7s; }
+.snore .z3, .dd-zzz .z3 { animation-delay: 1.4s; }
+
+.bob { animation: bob 4s ease-in-out infinite; }
+.bob.slow { animation-duration: 6.5s; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4%); } }
+
+/* ---------------- left margin ---------------- */
+.dd-cloud-l, .dd-cloud-r { width: calc(var(--square) * 2.3); height: calc(var(--square) * 2.3 * 70 / 160); }
+.drift { animation: drift 11s ease-in-out infinite; }
+@keyframes drift { 0%, 100% { transform: translateX(-4%); } 50% { transform: translateX(5%); } }
+.bubble { opacity: 0; animation: bubble 3.3s ease-out infinite; }
+@keyframes bubble {
+  0% { transform: translate(0, 0) scale(.3); opacity: 0; }
+  15% { opacity: .9; }
+  80% { transform: translate(40%, -230%) scale(1); opacity: .9; }
+  90%, 100% { transform: translate(44%, -250%) scale(1.25); opacity: 0; }
+}
+
+.dd-dandelion { width: calc(var(--square) * 1.55); height: calc(var(--square) * 1.55 * 150 / 120); }
+.sway-slow { transform-origin: 50% 100%; animation: sway-slow 5s ease-in-out infinite; }
+@keyframes sway-slow { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2.5deg); } }
+.seed { opacity: 0; animation: seed 7s ease-out infinite; }
+@keyframes seed {
+  0% { transform: translate(0, 0) rotate(0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate(-260%, -120%) rotate(-40deg); opacity: 0; }
+}
+.flier { width: 24%; height: 16%; }
+.fly-a { left: 70%; top: 2%; animation: fly-a 7s ease-in-out infinite; }
+.fly-b { left: 6%; top: 30%; animation: fly-b 8.5s ease-in-out infinite; }
+@keyframes fly-a {
+  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
+  25% { transform: translate(-80%, -40%) rotate(8deg); }
+  50% { transform: translate(-160%, 30%) scaleX(-1); }
+  75% { transform: translate(-60%, 60%) scaleX(-1) rotate(-6deg); }
+}
+@keyframes fly-b {
+  0%, 100% { transform: translate(0, 0); }
+  30% { transform: translate(120%, -50%) rotate(10deg); }
+  60% { transform: translate(60%, -120%) scaleX(-1); }
+  80% { transform: translate(-30%, -60%) scaleX(-1) rotate(-8deg); }
+}
+
+.dd-note-l, .dd-note-r { width: calc(var(--square) * 2.8); height: calc(var(--square) * 2.8 * 86 / 160); }
+.note-text {
+  position: absolute;
+  left: 9%; right: 12%; top: 17%; bottom: 8%;
+  overflow: hidden;
+  font-size: calc(var(--square) * .21);
+  line-height: 1.25;
+  color: var(--ink);
+}
+.note-text b { display: block; font-weight: 400; color: var(--red); font-size: 1.05em; }
+.note-body .mv { display: block; white-space: nowrap; }
+.note-body em { font-style: normal; opacity: .55; }
+.note-body b { display: inline; color: var(--red); }
+.note-body i { font-style: normal; color: var(--blue); }
+.note-body .hint { display: block; opacity: .65; }
+.tray { display: flex; flex-wrap: wrap; min-height: calc(var(--square) * .36); }
+.tray .art { position: relative; display: inline-block; width: calc(var(--square) * .36); height: calc(var(--square) * .36); }
+
+.dd-molehill-l, .dd-molehill-r { width: calc(var(--square) * 1.5); height: calc(var(--square) * .9); }
+.ant { left: 100%; bottom: 3%; width: 20%; height: 20%; animation: ant 4.2s linear infinite; }
+@keyframes ant {
+  0% { transform: translateX(0); opacity: 0; }
+  8% { opacity: 1; }
+  78% { transform: translateX(-280%); opacity: 1; }
+  86%, 100% { transform: translateX(-300%) scale(.4); opacity: 0; }
+}
+.inchworm { left: 58%; bottom: 2%; width: 36%; height: 28%; transform-origin: 0 100%; animation: inch 1.6s ease-in-out infinite; }
+@keyframes inch { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.82) translateY(-6%); } }
+
+.dd-pond { width: calc(var(--square) * 4.4); height: calc(var(--square) * 4.4 * 228 / 300); }
+.pad { animation: pad 3.2s ease-in-out infinite; }
+@keyframes pad { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-14%) rotate(3deg); } }
+.reed { transform-origin: 50% 100%; animation: reed 3.6s ease-in-out infinite; }
+@keyframes reed { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3.5deg); } }
+.ripple {
+  position: absolute; left: 44%; top: 80%; width: 12%; height: 6%;
+  border: 1.5px solid rgba(74, 95, 174, .6); border-radius: 50%;
+  animation: ripple 4.5s ease-out infinite;
+}
+@keyframes ripple { 0% { transform: scale(.2); opacity: 0; } 15% { opacity: .9; } 100% { transform: scale(3.2); opacity: 0; } }
+
+/* the chick is the "new game" button */
+.dd-chick {
+  width: calc(var(--square) * 1.45); height: calc(var(--square) * 1.45 * 150 / 120);
+  padding: 0; border: 0; background: none; cursor: pointer;
+  pointer-events: auto; transform-origin: 50% 100%;
+  animation: bob 3.4s ease-in-out infinite;
+  font: inherit; color: inherit;
+}
+.dd-chick:hover, .dd-chick:focus-visible { animation: chick-hop .5s ease-in-out infinite; }
+.dd-chick.cheer { animation: chick-cheer .7s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes chick-hop { 0%, 100% { transform: translateY(0) scale(1.04, .96); } 45% { transform: translateY(-9%) scale(.97, 1.04); } }
+@keyframes chick-cheer { 0% { transform: scale(1); } 40% { transform: translateY(-18%) rotate(-6deg) scale(1.08); } 100% { transform: none; } }
+.sign-text {
+  position: absolute; left: 18%; right: 18%; top: 60%; bottom: 7%;
+  display: grid; place-items: center;
+  font-size: calc(var(--square) * .24); line-height: 1; color: var(--ink);
+  transform: rotate(-3deg); pointer-events: none;
+}
+
+/* ---------------- right margin ---------------- */
+.dd-dots { width: calc(var(--square) * 2.4); height: calc(var(--square) * 2.4 * 130 / 200); }
+.dd-hills { width: calc(var(--square) * 4); height: calc(var(--square) * 4 * 80 / 260); }
+.smoke { opacity: 0; animation: smoke 3.6s ease-out infinite; }
+@keyframes smoke {
+  0% { transform: translate(0, 40%) scale(.4); opacity: 0; }
+  20% { opacity: .9; }
+  100% { transform: translate(60%, -120%) scale(1.3); opacity: 0; }
+}
+.dd-whale { width: calc(var(--square) * 4.5); height: calc(var(--square) * 4.5 * 170 / 280); }
+.fronds { transform-origin: 50% 80%; animation: reed 3s ease-in-out infinite; }
+.spout { transform-origin: 50% 100%; animation: spout 7s ease-out infinite; }
+@keyframes spout {
+  0%, 70% { transform: scaleY(0); opacity: 0; }
+  76% { transform: scaleY(1.1); opacity: 1; }
+  92% { transform: scaleY(1); opacity: .8; }
+  100% { transform: scaleY(.6) translateY(-10%); opacity: 0; }
+}
+.dd-garden { width: calc(var(--square) * 5); height: calc(var(--square) * 5 * 104 / 320); }
+.breathe { transform-origin: 50% 100%; animation: breathe-doodle 3.2s ease-in-out infinite; }
+@keyframes breathe-doodle { 0%, 100% { transform: scale(1.03, .97); } 50% { transform: scale(.98, 1.03); } }
+.dd-zzz { position: absolute; width: 10%; height: 34%; }
+.nod { transform-origin: 50% 100%; animation: nod 4.5s ease-in-out infinite; }
+.nod-head { transform-origin: 50% 90%; animation: reed 3.1s ease-in-out infinite; }
+@keyframes nod { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+.snail { left: 2%; transition: left 1.6s ease-in-out; animation: snail 2.4s ease-in-out infinite; }
+@keyframes snail { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(1.06); } }
+
+/* the take-back arrow, the speaker and the five strength stars */
+.dd-controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--square) * .1);
+  width: calc(var(--square) * 4.4);
+}
+.dd-control, .dd-star {
+  padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto;
+  transition: transform .15s ease;
+}
+.dd-control { width: calc(var(--square) * .62); height: calc(var(--square) * .62); }
+.dd-control svg, .dd-star svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.dd-control:hover, .dd-star:hover { transform: translateY(-3px) rotate(-6deg); }
+#sound.off .waves, #sound:not(.off) .muted { display: none; }
+.dd-stars { display: flex; gap: calc(var(--square) * .04); flex-basis: 100%; }
+.dd-star { width: calc(var(--square) * .62); height: calc(var(--square) * .62); }
+.dd-star:not(.on) path { fill: none; }
+
+/* the corner blobs breathe in their sleep */
+.doodle svg { animation: breathe-doodle 3.8s ease-in-out infinite; transform-origin: 50% 90%; }
+.doodle-tr svg, .doodle-bl svg { animation-delay: -1.7s; }
+
+/* ---------------- landscape: pin the doodles round the board ---------------- */
+@media (min-aspect-ratio: 6/5) {
+  .above, .below, .dock { position: static; }
+  .dock { display: contents; }
+  .above .dd, .below .dd { position: absolute; }
+  .dd-dandelion { left: calc(50% - 10 * var(--square)); top: calc(.3 * var(--square)); }
+  .dd-note-l { left: calc(50% - 8.7 * var(--square)); top: calc(2.4 * var(--square)); transform: rotate(-2deg); }
+  .dd-cloud-l { left: calc(50% - 10 * var(--square)); top: calc(4.6 * var(--square)); }
+  .dd-molehill-l { left: calc(50% - 7.2 * var(--square)); top: calc(5.9 * var(--square)); }
+  .dd-pond { left: calc(50% - 11.1 * var(--square)); top: calc(6.9 * var(--square)); }
+  .dd-chick { left: calc(50% - 9.4 * var(--square)); top: calc(10.2 * var(--square)); }
+  .dd-cloud-r { left: calc(50% + 6.5 * var(--square)); top: calc(.1 * var(--square)); }
+  .dd-dots { left: calc(50% + 8.4 * var(--square)); top: calc(1.4 * var(--square)); }
+  .dd-note-r { left: calc(50% + 5.7 * var(--square)); top: calc(2.4 * var(--square)); transform: rotate(1.5deg); }
+  .dd-hills { left: calc(50% + 6.6 * var(--square)); top: calc(4.3 * var(--square)); }
+  .dd-molehill-r { left: calc(50% + 5.5 * var(--square)); top: calc(5.6 * var(--square)); }
+  .dd-whale { left: calc(50% + 6.3 * var(--square)); top: calc(6.3 * var(--square)); }
+  .dd-garden { left: calc(50% + 5.8 * var(--square)); top: calc(9.1 * var(--square)); }
+  .dd-controls { left: calc(50% + 6.4 * var(--square)); top: calc(10.6 * var(--square)); }
+  .sheet { height: 100vh; }
+}
+
+/* ---------------- portrait: the margins fold into rows ----------------
+   Whale on top, then the sky, the board, the caption, the chick and the
+   controls, and the pond and garden side by side at the bottom: about 19.6
+   squares tall and 9.8 wide, so the square is sized to fit both. */
+@media (max-aspect-ratio: 119/100) {
+  :root { --square: clamp(22px, min(calc(100vw / 9.8), calc((100vh - 20px) / 19.6)), 70px); }
+  .sheet { height: 100vh; padding: calc(var(--square) * .15) 0 0; }
+  .above, .below {
+    position: relative;
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end;
+    gap: calc(var(--square) * .15) calc(var(--square) * .3);
+    width: min(100%, calc(var(--square) * 10));
+    margin: 0 auto;
+  }
+  .above .dd, .below .dd { position: relative; }
+  /* the extras that would push the page past the window */
+  .dd-cloud-r, .dd-cloud-l, .dd-dots, .dd-dandelion, .dd-hills, .dd-molehill-l, .dd-molehill-r,
+  .dd-note-l, .dd-note-r { display: none; }
+  .dd-whale { width: calc(var(--square) * 4.2); height: calc(var(--square) * 4.2 * 170 / 280); }
+  .sky { height: calc(var(--square) * 1.3); }
+  .sky .dd-bunting { width: calc(var(--square) * 5.4); height: calc(var(--square) * 5.4 * 60 / 540); }
+  .dd-sun, .dd-moon { width: calc(var(--square) * 1.2); height: calc(var(--square) * 1.2); }
+  .board-grid { margin-top: calc(var(--square) * .45); }
+  .dock { display: flex; width: 100%; justify-content: space-between; align-items: flex-end; }
+  .dd-chick { width: calc(var(--square) * 1.3); height: calc(var(--square) * 1.3 * 150 / 120); }
+  .dd-controls { width: calc(var(--square) * 3.6); justify-content: flex-end; }
+  .dd-pond { width: calc(var(--square) * 3.7); height: calc(var(--square) * 3.7 * 228 / 300); }
+  .dd-garden { width: calc(var(--square) * 5.4); height: calc(var(--square) * 5.4 * 104 / 320); }
+}
