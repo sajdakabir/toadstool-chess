@@ -1,0 +1,462 @@
+:root {
+  --paper: #f4efe4;
+  --paper-2: #ece5d6;
+  --ink: #5a4634;
+  --line: #4a3b2c;
+  --red: #c5503f;
+  --blue: #3f5fa8;
+  --green: #8fae73;
+  --shadow: rgba(80, 60, 40, .18);
+  --square: clamp(30px, min(calc(100vw / 23.4), calc((100vh - 30px) / 12.6)), 84px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  font-family: 'Indie Flower', 'Comic Sans MS', cursive;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at 20% 10%, #fbf7ee 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, #f6f0e2 0%, transparent 60%),
+    #efe8d9;
+}
+
+/* faint paper fibres */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .5;
+  background-image:
+    repeating-linear-gradient(92deg, rgba(150, 130, 100, .05) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(3deg, rgba(150, 130, 100, .04) 0 1px, transparent 1px 6px);
+}
+
+.defs-only { position: absolute; width: 0; height: 0; }
+
+/* the sleepy blobs at the board's corners */
+.doodle {
+  position: absolute;
+  z-index: 0;
+  width: calc(var(--square) * 1.02);
+  pointer-events: none;
+}
+.doodle svg { display: block; width: 100%; height: auto; overflow: visible; }
+.doodle-tl { left: calc(var(--square) * -1.02); top: calc(var(--square) * -0.86); transform: rotate(-6deg); }
+.doodle-tr { right: calc(var(--square) * -1.02); top: calc(var(--square) * -0.86); transform: rotate(5deg); }
+.doodle-bl { left: calc(var(--square) * -1.1); bottom: calc(var(--square) * -0.72); transform: rotate(4deg); }
+.doodle-br { right: calc(var(--square) * -1.1); bottom: calc(var(--square) * -0.72); transform: rotate(-5deg); }
+
+.board-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  gap: 4px;
+  justify-content: center;
+  margin-top: calc(var(--square) * .55);
+}
+
+.ranks, .files { display: grid; gap: 0; color: var(--red); font-size: calc(var(--square) * .5); }
+.ranks { grid-template-rows: repeat(8, var(--square)); padding-right: calc(var(--square) * .14); }
+.files { grid-template-columns: repeat(8, var(--square)); padding-top: calc(var(--square) * .06); }
+.ranks i, .files i {
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  line-height: 1;
+}
+.files i { display: flex; flex-direction: column; align-items: center; }
+.tally { width: calc(var(--square) * .2); height: calc(var(--square) * .17); margin-top: 3px; overflow: visible; }
+.ranks i:nth-child(-n+4), .files i:nth-child(n+5) { color: var(--blue); }
+
+/* ---------------- board ---------------- */
+.board-wrap {
+  position: relative;
+  isolation: isolate;
+}
+
+/* the grid is drawn over the squares but under the pieces */
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, var(--square));
+  grid-template-rows: repeat(8, var(--square));
+}
+
+.sq {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: transparent no-repeat center / 100% 100%;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sq.pickable { cursor: pointer; }
+.sq.check { background-color: rgba(197, 80, 63, .32); }
+
+/* hand-drawn marks sit on the paper, under the pieces */
+.mark {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* the circles pop on as if they had just been drawn */
+@keyframes mark-in { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.mark-target, .mark-select { animation: mark-in .2s ease-out both; }
+
+/* the gold brackets only show on the target under the cursor */
+.mark-hover { opacity: 0; transition: opacity .12s ease; }
+.sq:hover .mark-hover { opacity: 1; }
+
+/* ---- the last move: footprints and a ring round the mover's feet ---- */
+.trail {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+@keyframes dot-in { from { opacity: 0; transform: scale(.2); } to { opacity: .85; transform: none; } }
+.trail-dot, .trail-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dot-in .2s ease-out both;
+}
+.trail.still .trail-dot, .trail.still .trail-ring { animation: none; opacity: .85; }
+@keyframes wobble-marks { 0% { opacity: 0; } 12%, 70% { opacity: .85; } 100% { opacity: 0; } }
+.trail-shake { animation: wobble-marks 1.4s ease-out both; }
+
+/* ---- pieces ---- */
+/* drawn bigger than their square, standing on its bottom line and rising
+   into the square above, the way they sit on the paper in the drawing */
+.piece {
+  --tilt: 0deg;
+  position: absolute;
+  left: -31.6%;
+  bottom: -6.2%;
+  z-index: 2;
+  width: 163.2%;
+  height: 163.2%;
+  pointer-events: none;
+  transform-origin: 50% 87%;
+  will-change: transform;
+  animation: breathe 3.4s ease-in-out infinite;
+}
+.art { position: absolute; inset: 0; display: block; }
+.art > img, .art > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* the boil: three traced frames shown in turn 0-1-2-1 at 8 per second, each
+   piece on its own beat (--phase) so the board shimmers rather than flashes */
+.boil { opacity: 0; will-change: opacity; }
+.boil.b0 { opacity: 1; }
+.art:not(.still) .boil { animation: .5s steps(1, end) infinite; animation-delay: var(--phase, 0s); }
+.art:not(.still) .b0 { animation-name: boil0; }
+.art:not(.still) .b1 { animation-name: boil1; }
+.art:not(.still) .b2 { animation-name: boil2; }
+@keyframes boil0 { 0% { opacity: 1; } 25%, 100% { opacity: 0; } }
+@keyframes boil1 { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75%, 100% { opacity: 1; } }
+@keyframes boil2 { 0%, 25% { opacity: 0; } 50% { opacity: 1; } 75%, 100% { opacity: 0; } }
+
+/* everyone sways a little, each on their own beat */
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt)); }
+  50% { transform: translateY(-2.5px) rotate(calc(var(--tilt) * -0.6)); }
+}
+
+.sq.pickable:hover .piece {
+  animation: none;
+  transform: translateY(-4px) scale(1.07) rotate(var(--tilt));
+  transition: transform .14s ease;
+}
+
+/* picked up: jumps on the spot, pleased with itself — crouch, spring, land */
+@keyframes hop {
+  0%, 100% { transform: translateY(0) scale(1.07, .93) rotate(var(--tilt)); }
+  42% { transform: translateY(-15%) scale(.94, 1.08) rotate(calc(var(--tilt) * -1)); }
+  78% { transform: translateY(0) scale(1.09, .91) rotate(var(--tilt)); }
+}
+.sq.selected .piece { animation: hop .72s cubic-bezier(.3, .7, .4, 1) infinite; z-index: 4; }
+
+/* ---- faces: CSS shows whichever one the piece is feeling ---- */
+.face .mood { display: none; }
+.piece[data-mood] .face .eyes { display: none; }
+.piece[data-mood="wide"] .mood-wide,
+.piece[data-mood="happy"] .mood-happy,
+.piece[data-mood="sleepy"] .mood-sleepy,
+.piece[data-mood="worried"] .mood-worried { display: inline; }
+
+/* ---- mouths: an "o" for yawns and surprises ---- */
+.face .mouthv { display: none; }
+.piece[data-mouth="o"] .face .mouth { display: none; }
+.piece[data-mouth="o"] .face .mouth-o { display: inline; }
+
+/* ---- the eyes turn towards the pointer ---- */
+.face .look {
+  transform: translate(calc(var(--lx, 0) * 1px), calc(var(--ly, 0) * 1px));
+  transition: transform .3s ease-out;
+}
+
+/* ---- little acts an idle piece performs ---- */
+.piece.act-yawn { animation: act-yawn 1.7s ease-in-out; }
+@keyframes act-yawn {
+  0%, 100% { transform: rotate(var(--tilt)); }
+  30%, 62% { transform: scale(.95, 1.09) rotate(var(--tilt)); }
+  80% { transform: scale(1.05, .95) rotate(var(--tilt)); }
+}
+.piece.act-giggle { animation: act-giggle 1.3s ease-in-out; }
+@keyframes act-giggle {
+  0%, 100% { transform: rotate(var(--tilt)); }
+  10%, 30%, 50%, 70% { transform: translateY(-2.5%) rotate(-5deg); }
+  20%, 40%, 60%, 80% { transform: translateY(-.5%) rotate(5deg); }
+}
+.piece.act-stretch { animation: act-stretch 1.45s ease-in-out; }
+@keyframes act-stretch {
+  0%, 100% { transform: rotate(var(--tilt)); }
+  22% { transform: scale(1.1, .88) rotate(var(--tilt)); }
+  52% { transform: scale(.91, 1.13) rotate(var(--tilt)); }
+  76% { transform: scale(1.04, .97) rotate(var(--tilt)); }
+}
+.piece.act-look .face .look { animation: act-look 2.3s ease-in-out; }
+@keyframes act-look {
+  0%, 100% { transform: translate(0, 0); }
+  18%, 40% { transform: translate(-2.2px, .4px); }
+  58%, 82% { transform: translate(2.2px, .4px); }
+}
+.emote-once { animation: emote-pop .28s ease-out both, puff-away .6s ease-out .28s forwards; }
+@keyframes puff-away { to { transform: translate(18%, -30%) scale(1.2); opacity: 0; } }
+
+/* ---- emotes over the head ---- */
+.emote {
+  position: absolute;
+  right: 10%;
+  top: 11%;
+  z-index: 1;
+  width: 25%;
+  height: 25%;
+  pointer-events: none;
+  transform-origin: 30% 100%;
+  will-change: transform;
+  animation: emote-pop .28s cubic-bezier(.3, 1.6, .5, 1) both, emote-bob 1.5s ease-in-out .28s infinite;
+}
+.emote svg { display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes emote-pop { from { transform: scale(0) rotate(-20deg); } to { transform: none; } }
+@keyframes emote-bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10%) rotate(6deg); } }
+
+/* the z's drift up and fade, one after another */
+.emote-zzz { animation: emote-pop .28s ease-out both; }
+.emote-zzz path { opacity: 0; animation: zzz 2.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.emote-zzz .z2 { animation-delay: .5s; }
+.emote-zzz .z3 { animation-delay: 1s; }
+@keyframes zzz {
+  0% { opacity: 0; transform: translate(-6px, 6px) scale(.6); }
+  25%, 60% { opacity: .9; }
+  100% { opacity: 0; transform: translate(8px, -10px) scale(1.1); }
+}
+
+/* hopping across the board: above everything, no idle sway */
+.piece.moving { z-index: 6; animation: none; }
+
+/* eyes close for a moment now and then: one piece at a time, triggered
+   from script, so the pencilled drawings are not repainted every frame */
+@keyframes blink {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(.08); }
+}
+.face .eyes { transform-box: fill-box; transform-origin: center; }
+.piece.blink .eyes { animation: blink .24s ease-in-out; }
+
+/* the king gets a fright when checked */
+@keyframes fright {
+  0%, 100% { transform: translateX(0) rotate(var(--tilt)); }
+  20% { transform: translateX(-4px) rotate(-6deg); }
+  60% { transform: translateX(4px) rotate(6deg); }
+}
+.sq.check .piece { animation: fright .45s ease-in-out 2; }
+
+/* ---- a piece being taken ----
+   It waits until the attacker lands (--land), then wobbles with spirals for
+   eyes and stars round its head, and tumbles off the paper. */
+.fx {
+  position: absolute;
+  z-index: 5;
+  width: 12.5%;
+  height: 12.5%;
+  pointer-events: none;
+}
+.fx-piece {
+  position: absolute;
+  left: -31.6%;
+  bottom: -6.2%;
+  width: 163.2%;
+  height: 163.2%;
+  transform-origin: 50% 87%;
+  animation:
+    ko-wobble .34s ease-in-out var(--land) both,
+    tumble .75s ease-in calc(var(--land) + .55s) forwards;
+}
+.fx-piece .art { position: absolute; inset: 0; }
+
+@keyframes ko-wobble {
+  0%, 100% { transform: none; }
+  25% { transform: translateX(-7%) rotate(-9deg); }
+  55% { transform: translateX(6%) rotate(8deg); }
+  80% { transform: translateX(-3%) rotate(-4deg); }
+}
+@keyframes ko-hide { to { opacity: 0; } }
+@keyframes ko-show { to { opacity: 1; } }
+@keyframes ko-orbit { to { transform: rotate(360deg); } }
+.fx .eyes { animation: ko-hide .01s var(--land) forwards; }
+.fx .ko-dizzy, .fx .shake-marks { opacity: 0; animation: ko-show .12s var(--land) forwards; }
+.fx .ko-stars {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ko-show .12s var(--land) forwards, ko-orbit .8s linear var(--land) infinite;
+}
+
+@keyframes tumble {
+  0% { transform: none; opacity: 1; }
+  30% { transform: translate(14%, -16%) rotate(34deg); opacity: 1; }
+  100% { transform: translate(46%, 26%) rotate(96deg); opacity: 0; }
+}
+
+/* ---- dust kicked up on landing ---- */
+.dust {
+  position: absolute;
+  z-index: 3;
+  width: 12.5%;
+  height: 12.5%;
+  pointer-events: none;
+}
+.dust svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.puff { transform-box: fill-box; transform-origin: center bottom; }
+.puff-l { animation: puff-l .6s ease-out both; }
+.puff-r { animation: puff-r .6s ease-out both; }
+.puff-c { animation: puff-c .6s ease-out both; }
+@keyframes puff-l { from { transform: translate(14px, 0) scale(.3); opacity: 1; } to { transform: translate(-6px, -5px) scale(1.15); opacity: 0; } }
+@keyframes puff-r { from { transform: translate(-14px, 0) scale(.3); opacity: 1; } to { transform: translate(6px, -5px) scale(1.15); opacity: 0; } }
+@keyframes puff-c { from { transform: scale(.3); opacity: .9; } to { transform: translateY(-6px) scale(1.1); opacity: 0; } }
+
+/* ---- the cloud a captured piece goes up in ---- */
+.mark-poof .puff {
+  opacity: 0;
+  animation: poof .7s ease-out calc(var(--land, 0ms) + .95s) both;
+}
+.mark-poof .puff:nth-child(2) { animation-delay: calc(var(--land, 0ms) + 1.02s); }
+.mark-poof .puff:nth-child(3) { animation-delay: calc(var(--land, 0ms) + 1.08s); }
+@keyframes poof {
+  0% { opacity: 0; transform: scale(.3); }
+  30% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: translateY(-14px) scale(1.4); }
+}
+
+@keyframes spark-out {
+  0% { transform: scale(0); opacity: 0; }
+  40% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(.4); opacity: 0; }
+}
+.mark-spark polygon {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spark-out .62s ease-out both;
+  animation-delay: calc(var(--land, 0ms) + var(--i, 0) * 55ms);
+}
+
+/* ---------------- caption ---------------- */
+.caption-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 5vw, 64px);
+  margin: calc(var(--square) * .1) auto 4px;
+}
+.crayon { flex: none; width: calc(var(--square) * 1.35); }
+.crayon svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+.caption {
+  margin: 0;
+  min-width: 5.5em;
+  font-size: calc(var(--square) * .62);
+  color: var(--red);
+  border-bottom: 2.5px solid var(--red);
+  padding: 0 .3em 2px;
+  line-height: 1.15;
+  text-align: center;
+}
+.caption.them {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+  animation: muse 1.4s ease-in-out infinite;
+}
+
+/* the caption breathes while they are deciding */
+@keyframes muse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+.caption.over { color: #6b7d4f; border-bottom-color: #6b7d4f; }
+
+/* ---------------- promotion ---------------- */
+.promo-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(60, 46, 34, .45);
+  z-index: 20;
+}
+.promo-backdrop[hidden] { display: none; }
+
+.promo-card {
+  background: #fbf7ee;
+  border: 3px solid var(--line);
+  border-radius: 22px 14px 24px 12px / 14px 24px 12px 22px;
+  padding: 18px 22px;
+  box-shadow: 4px 6px 0 rgba(80, 60, 40, .3);
+  text-align: center;
+}
+.promo-card p { margin: 0 0 12px; color: var(--red); font-size: 17px; }
+.promo-choices { display: flex; gap: 8px; }
+.promo-choices button {
+  width: 68px; height: 68px;
+  padding: 4px;
+  background: #fff;
+  border: 2.5px solid var(--line);
+  border-radius: 16px 10px 18px 9px / 10px 18px 9px 16px;
+  cursor: pointer;
+  transition: transform .12s ease;
+}
+.promo-choices button:hover { transform: translateY(-4px) rotate(-3deg); }
+.promo-choices button { position: relative; }
+.promo-choices .art { inset: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

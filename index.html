@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toadstool Chess</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css?v=15">
+<link rel="stylesheet" href="css/world.css?v=15">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='78' font-size='80'>🍄</text></svg>">
+</head>
+<body>
+
+<!-- shared filters / patterns for the crayon look -->
+<svg class="defs-only" aria-hidden="true">
+  <defs>
+    <filter id="crayon" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- coloured pencil: a little hand wobble on every edge, then a streaky
+         grain knocked out of the colour so the paper shows through -->
+    <filter id="pencil" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="wobble"/>
+      <!-- the drawing's own paper, so the board never shows through a piece -->
+      <feFlood flood-color="#fbf6ea" result="paperTone"/>
+      <feComposite in="paperTone" in2="wobble" operator="in" result="paper"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.8 0.3" numOctaves="2" seed="12" result="grain"/>
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  2.4 0 0 0 -0.7" result="tooth"/>
+      <feComposite in="wobble" in2="tooth" operator="in" result="grainy"/>
+      <feComposite in="grainy" in2="wobble" operator="arithmetic" k1="0" k2="0.45" k3="0.55" k4="0" result="pencilled"/>
+      <feMerge><feMergeNode in="paper"/><feMergeNode in="pencilled"/></feMerge>
+    </filter>
+    <pattern id="scribble" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <path d="M0,0 V5" stroke="#6b4a33" stroke-width="2.6"/>
+    </pattern>
+  </defs>
+</svg>
+
+<main class="sheet" id="sheet">
+  <h1 class="sr-only">Toadstool Chess</h1>
+
+  <!-- doodles: drawn by js/world*.js. On wide screens they are pinned round
+       the board; on narrow ones they fall into rows above and below it. -->
+  <div class="above" id="above"></div>
+
+  <section class="stage">
+    <div class="sky" id="sky"></div>
+
+    <div class="board-grid">
+      <div class="ranks" id="ranks" aria-hidden="true"></div>
+      <div class="board-wrap" id="board-wrap">
+          <div class="doodle doodle-tl" aria-hidden="true"><svg viewBox="0 0 100 76"><g filter="url(#pencil)"><path d="M14,45 C12,27 30,17 52,18 C74,19 90,29 88,47 C86,63 70,69 50,68 C28,67 16,61 14,45 Z" fill="#f3e2c4" stroke="#8f5a32" stroke-width="2.6" stroke-linejoin="round"/><path d="M22,54 q10,9 26,10" fill="none" stroke="#c9a173" stroke-width="3" opacity=".55"/><ellipse cx="31" cy="51" rx="5" ry="3" fill="#ee8c9c" opacity=".6"/><ellipse cx="69" cy="51" rx="5" ry="3" fill="#ee8c9c" opacity=".6"/><path d="M28,74 q10,2 18,0 M54,74 q8,2 14,-1" fill="none" stroke="#8f5a32" stroke-width="1.4" opacity=".45"/></g><g fill="none" stroke="#2f2a3d" stroke-linecap="round"><path d="M33,43 q5,5 10,0 M57,43 q5,5 10,0" stroke-width="2.4"/><path d="M46,52 q4,3 8,0" stroke-width="1.7"/></g><text x="84" y="15" font-size="17" fill="#6b4a33" font-family="Indie Flower, cursive">z</text></svg></div>
+          <div class="doodle doodle-tr" aria-hidden="true"><svg viewBox="0 0 100 76"><g filter="url(#pencil)"><path d="M14,45 C12,27 30,17 52,18 C74,19 90,29 88,47 C86,63 70,69 50,68 C28,67 16,61 14,45 Z" fill="#f3e2c4" stroke="#8f5a32" stroke-width="2.6" stroke-linejoin="round"/><path d="M22,54 q10,9 26,10" fill="none" stroke="#c9a173" stroke-width="3" opacity=".55"/><ellipse cx="31" cy="51" rx="5" ry="3" fill="#ee8c9c" opacity=".6"/><ellipse cx="69" cy="51" rx="5" ry="3" fill="#ee8c9c" opacity=".6"/><circle cx="68" cy="29" r="1.7" fill="#8f5a32"/><circle cx="75" cy="33" r="1.3" fill="#8f5a32"/><circle cx="64" cy="34" r="1.2" fill="#8f5a32"/><path d="M28,74 q10,2 18,0 M54,74 q8,2 14,-1" fill="none" stroke="#8f5a32" stroke-width="1.4" opacity=".45"/></g><g fill="none" stroke="#2f2a3d" stroke-linecap="round"><path d="M33,43 q5,5 10,0 M57,43 q5,5 10,0" stroke-width="2.4"/><path d="M46,52 q4,3 8,0" stroke-width="1.7"/></g><text x="4" y="15" font-size="17" fill="#6b4a33" font-family="Indie Flower, cursive">z</text></svg></div>
+          <div class="doodle doodle-bl" aria-hidden="true"><svg viewBox="0 0 100 76"><g filter="url(#pencil)"><path d="M14,45 C12,27 30,17 52,18 C74,19 90,29 88,47 C86,63 70,69 50,68 C28,67 16,61 14,45 Z" fill="#f3e2c4" stroke="#8f5a32" stroke-width="2.6" stroke-linejoin="round"/><path d="M22,54 q10,9 26,10" fill="none" stroke="#c9a173" stroke-width="3" opacity=".55"/><ellipse cx="31" cy="51" rx="5" ry="3" fill="#ee8c9c" opacity=".6"/><ellipse cx="69" cy="51" rx="5" ry="3" fill="#ee8c9c" opacity=".6"/><path d="M28,74 q10,2 18,0 M54,74 q8,2 14,-1" fill="none" stroke="#8f5a32" stroke-width="1.4" opacity=".45"/></g><g fill="none" stroke="#2f2a3d" stroke-linecap="round"><path d="M33,43 q5,5 10,0 M57,43 q5,5 10,0" stroke-width="2.4"/><path d="M46,52 q4,3 8,0" stroke-width="1.7"/></g><text x="84" y="15" font-size="17" fill="#6b4a33" font-family="Indie Flower, cursive">z</text></svg></div>
+          <div class="doodle doodle-br" aria-hidden="true"><svg viewBox="0 0 100 76"><g filter="url(#pencil)"><path d="M14,45 C12,27 30,17 52,18 C74,19 90,29 88,47 C86,63 70,69 50,68 C28,67 16,61 14,45 Z" fill="#f3e2c4" stroke="#8f5a32" stroke-width="2.6" stroke-linejoin="round"/><path d="M22,54 q10,9 26,10" fill="none" stroke="#c9a173" stroke-width="3" opacity=".55"/><ellipse cx="31" cy="51" rx="5" ry="3" fill="#ee8c9c" opacity=".6"/><ellipse cx="69" cy="51" rx="5" ry="3" fill="#ee8c9c" opacity=".6"/><circle cx="68" cy="29" r="1.7" fill="#8f5a32"/><circle cx="75" cy="33" r="1.3" fill="#8f5a32"/><circle cx="64" cy="34" r="1.2" fill="#8f5a32"/><path d="M28,74 q10,2 18,0 M54,74 q8,2 14,-1" fill="none" stroke="#8f5a32" stroke-width="1.4" opacity=".45"/></g><g fill="none" stroke="#2f2a3d" stroke-linecap="round"><path d="M33,43 q5,5 10,0 M57,43 q5,5 10,0" stroke-width="2.4"/><path d="M46,52 q4,3 8,0" stroke-width="1.7"/></g><text x="4" y="15" font-size="17" fill="#6b4a33" font-family="Indie Flower, cursive">z</text></svg></div>
+          <div class="board" id="board" role="grid" aria-label="chess board"></div>
+      </div>
+      <div class="corner"></div>
+      <div class="files" id="files" aria-hidden="true"></div>
+    </div>
+
+    <div class="caption-row">
+      <div class="crayon crayon-red" aria-hidden="true"><svg viewBox="0 0 140 72"><g transform="rotate(16 70 36)"><g filter="url(#pencil)"><path d="M18,23 H92 V47 H18 Q10,35 18,23 Z" fill="#f6cfc6" stroke="#c5503f" stroke-width="2.4" stroke-linejoin="round"/><path d="M34,23 V47 M80,23 V47" stroke="#c5503f" stroke-width="2" fill="none"/><path d="M21,27 l9,18 M25,25 l8,20" stroke="#c5503f" stroke-width="1.5" opacity=".5"/><path d="M92,23 L118,35 L92,47 Z" fill="#fbe3d8" stroke="#c5503f" stroke-width="2.4" stroke-linejoin="round"/><path d="M109,31 L118,35 L109,39 Z" fill="#c5503f"/><ellipse cx="45" cy="40" rx="4.5" ry="2.6" fill="#ee8c9c" opacity=".6"/><ellipse cx="69" cy="40" rx="4.5" ry="2.6" fill="#ee8c9c" opacity=".6"/></g><ellipse cx="51" cy="33" rx="2.8" ry="3.3" fill="#232032"/><ellipse cx="63" cy="33" rx="2.8" ry="3.3" fill="#232032"/><circle cx="52.1" cy="31.7" r="1" fill="#fff"/><circle cx="64.1" cy="31.7" r="1" fill="#fff"/><path d="M54,39 q3,2.4 6,0" fill="none" stroke="#9a3a2e" stroke-width="1.6" stroke-linecap="round"/></g></svg></div>
+      <p class="caption" id="caption">your move</p>
+      <div class="crayon crayon-blue" aria-hidden="true"><svg viewBox="0 0 140 72"><g transform="rotate(-14 70 36)"><g filter="url(#pencil)"><path d="M18,23 H92 V47 H18 Q10,35 18,23 Z" fill="#d9dff4" stroke="#3f5fa8" stroke-width="2.4" stroke-linejoin="round"/><path d="M22,25 L40,47 M30,23 L48,47 M38,23 L55,45 M46,23 L52,31" stroke="#3f5fa8" stroke-width="1.7" opacity=".6"/><path d="M80,23 V47" stroke="#3f5fa8" stroke-width="2"/><path d="M92,23 L118,35 L92,47 Z" fill="#e8ecf9" stroke="#3f5fa8" stroke-width="2.4" stroke-linejoin="round"/><path d="M109,31 L118,35 L109,39 Z" fill="#3f5fa8"/><ellipse cx="60" cy="41" rx="4" ry="2.4" fill="#ee8c9c" opacity=".6"/><ellipse cx="79" cy="41" rx="4" ry="2.4" fill="#ee8c9c" opacity=".6"/></g><g fill="none" stroke="#232032" stroke-linecap="round"><path d="M61,34 q3,3 6,0 M72,34 q3,3 6,0" stroke-width="2"/><path d="M67,40 q2.5,2 5,0" stroke-width="1.5"/></g></g></svg></div>
+    </div>
+    </div>
+  </section>
+
+  <div class="below" id="below"></div>
+</main>
+
+<div class="promo-backdrop" id="promo" hidden>
+  <div class="promo-card">
+    <p>your toadstool made it across!</p>
+    <div class="promo-choices" id="promo-choices"></div>
+  </div>
+</div>
+
+<script src="js/engine.js?v=15"></script>
+<script src="js/ai.js?v=15"></script>
+<script src="js/pencil.js?v=15"></script>
+<script src="js/pieces.js?v=15"></script>
+<script src="js/marks.js?v=15"></script>
+<script src="js/world.js?v=15"></script>
+<script src="js/world-land.js?v=15"></script>
+<script src="js/world-mount.js?v=15"></script>
+<script src="js/app.js?v=15"></script>
+</body>
+</html>
