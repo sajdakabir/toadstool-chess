@@ -53,6 +53,48 @@ and visit <http://localhost:4173>.
   stars** set the opponent's strength.
 - The sticky notes keep the latest moves and what each side has caught.
 
+## The YC Partners edition
+
+A second board at [`/yc-chess`](yc-chess/) where Y Combinator's partners and
+founders play, drawn as chibi pencil doodles in hoodies with a little orange
+Y. Hover a piece to see its name tag; double-click to pin it (on a touch
+screen, pick the piece up). *Unofficial fan doodles; not affiliated with or
+endorsed by Y Combinator.*
+
+The sheet round it is YC's too: the Golden Gate in the fog, "make something
+people want" on a ribbon, a rocket lifting off, ramen (profitable) and
+coffee, a Demo Day stage, SF hills with a cable car, a dot-to-dot that draws
+a hockey-stick growth curve as you play, and a runway where a paper plane
+taxis a little further every move until it takes off. The chick's sign says
+"new batch", and the notes keep "acquired" pieces and the "weekly update".
+
+| | Team Garry (orange, you) | Team PG (blue) |
+| --- | --- | --- |
+| King | Garry Tan, President & CEO | Paul Graham, founder |
+| Queen | Jared Friedman, Managing Partner | Jessica Livingston, founder |
+| Rooks | Harj Taggar, Diana Hu, Managing Partners | Robert Morris, Trevor Blackwell, founders |
+| Bishops | technical general partners | technical general partners |
+| Knights | growth, product and design partners | growth, product and design partners |
+| Pawns | founders with laptops | founders with laptops |
+
+There are sixteen general partners but only eight bishop and knight squares,
+so a fresh line-up is drawn every game. The diagonal-thinking bishops come
+from Ankit Gupta, Nicolas Dessaigne, Andrew Miklas, Jon Xu, Grey Baker, Pete
+Koomen and Chris Golda; the leaping knights, riding hobby horses, from Gustaf
+Alströmer, Brad Flora, Aaron Epstein, David Lieb, Tom Blomfield, Tyler
+Bosmeny, Raphael Schaad, Harshita Arora and Vivian Midha Shen.
+
+Everyone carries something from their bio: Garry a designer's pencil, PG a
+paintbrush, Jessica *Founders at Work*, Trevor a little robot, Andrew a pager,
+David two phones to bump, Tom a coral bank card, and so on. A founder who
+reaches the far side makes it, and grows a unicorn horn.
+
+The page lives in `yc-chess/` with its own cast (`cast.js`), game wiring
+(`app.js`) and sheet (`world-yc.js`), and reuses the engine, the AI and the
+pencil helpers unchanged. It boils its drawings from sprite sheets
+(`pencil-sprite.js`): with every partner wearing a hat on its own layer, one
+GPU layer per frame was too many.
+
 ## Publish it with GitHub Pages
 
 It is a static site, so GitHub Pages can host it as is: in the repository go
